@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Online Cash Receipt Generating System for Supermarket</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+  />
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center p-4">
+  <header class="w-full max-w-4xl mb-8 px-2 sm:px-6">
+    <h1 class="text-2xl sm:text-3xl font-bold text-center text-blue-700 mb-2">
+      Supermarket Online Cash Receipt Generator
+    </h1>
+    <p class="text-center text-gray-600 text-sm sm:text-base">
+      Enter items purchased and generate a printable cash receipt instantly.
+    </p>
+  </header>
+
+  <main class="w-full max-w-4xl bg-white rounded shadow p-4 sm:p-6">
+    <form id="receiptForm" class="space-y-6">
+      <div>
+        <label for="customerName" class="block font-semibold text-gray-700 mb-1 text-sm sm:text-base">
+          Customer Name
+        </label>
+        <input
+          type="text"
+          id="customerName"
+          name="customerName"
+          placeholder="Enter customer name"
+          class="w-full border border-gray-300 rounded px-3 py-2 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+          required
+        />
+      </div>
+
+      <div>
+        <label class="block font-semibold text-gray-700 mb-1 text-sm sm:text-base">
+          Items Purchased
+        </label>
+        <div class="overflow-x-auto border border-gray-300 rounded">
+          <table class="w-full min-w-[600px] border-collapse table-auto">
+            <thead class="bg-blue-100">
+              <tr>
+                <th class="border border-gray-300 px-2 sm:px-3 py-2 text-left text-xs sm:text-sm">Item Name</th>
+                <th class="border border-gray-300 px-2 sm:px-3 py-2 text-left text-xs sm:text-sm">Quantity</th>
+                <th class="border border-gray-300 px-2 sm:px-3 py-2 text-left text-xs sm:text-sm">Unit Price (₵)</th>
+                <th class="border border-gray-300 px-2 sm:px-3 py-2 text-left text-xs sm:text-sm">Total (₵)</th>
+                <th class="border border-gray-300 px-2 sm:px-3 py-2 text-center text-xs sm:text-sm">Remove</th>
+              </tr>
+            </thead>
+            <tbody id="itemsBody">
+              <tr class="item-row">
+                <td class="border border-gray-300 px-2 sm:px-3 py-2">
+                  <input
+                    type="text"
+                    name="itemName"
+                    placeholder="Item name"
+                    class="w-full border border-gray-300 rounded px-2 py-1 text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    required
+                  />
+                </td>
+                <td class="border border-gray-300 px-2 sm:px-3 py-2">
+                  <input
+                    type="number"
+                    name="quantity"
+                    min="1"
+                    value="1"
+                    class="w-full border border-gray-300 rounded px-2 py-1 text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    required
+                  />
+                </td>
+                <td class="border border-gray-300 px-2 sm:px-3 py-2">
+                  <input
+                    type="number"
+                    name="unitPrice"
+                    min="0"
+                    step="0.01"
+                    value="0.00"
+                    class="w-full border border-gray-300 rounded px-2 py-1 text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    required
+                  />
+                </td>
+                <td class="border border-gray-300 px-2 sm:px-3 py-2 text-right text-xs sm:text-sm total-cell">₵0.00</td>
+                <td class="border border-gray-300 px-2 sm:px-3 py-2 text-center text-xs sm:text-sm">
+                  <button type="button" class="remove-item text-red-600 hover:text-red-800 focus:outline-none" aria-label="Remove item">
+                    <i class="fas fa-trash-alt"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <button
+          type="button"
+          id="addItemBtn"
+          class="mt-3 inline-flex items-center px-3 sm:px-4 py-2 bg-blue-600 text-white rounded text-sm sm:text-base hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <i class="fas fa-plus mr-2"></i> Add Item
+        </button>
+      </div>
+
+      <div class="space-y-1 text-right">
+        <div class="text-base sm:text-lg font-semibold text-gray-800">
+          Subtotal: ₵<span id="subtotal">0.00</span>
+        </div>
+        <div class="text-base sm:text-lg font-semibold text-gray-800">
+          VAT (12.5%): ₵<span id="vat">0.00</span>
+        </div>
+        <div class="text-lg sm:text-xl font-bold text-blue-700">
+          Total: ₵<span id="total">0.00</span>
+        </div>
+      </div>
+
+      <div class="flex justify-center">
+        <button
+          type="submit"
+          class="w-full sm:w-auto px-6 py-3 bg-green-600 text-white rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 text-sm sm:text-base"
+        >
+          Generate Receipt
+        </button>
+      </div>
+    </form>
+
+    <section id="receiptSection" class="mt-10 hidden bg-gray-50 border border-gray-300 rounded p-4 sm:p-6 max-w-full overflow-x-auto">
+      <h2 class="text-xl sm:text-2xl font-bold mb-4 text-center text-blue-700">Cash Receipt</h2>
+      <div class="mb-4 text-sm sm:text-base space-y-1">
+        <p><strong>Customer Name:</strong> <span id="receiptCustomerName"></span></p>
+        <p><strong>Date:</strong> <span id="receiptDate"></span></p>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full min-w-[600px] border border-gray-300 rounded table-auto mb-4">
+          <thead class="bg-blue-100">
+            <tr>
+              <th class="border border-gray-300 px-2 sm:px-3 py-2 text-left text-xs sm:text-sm">Item Name</th>
+              <th class="border border-gray-300 px-2 sm:px-3 py-2 text-right text-xs sm:text-sm">Quantity</th>
+              <th class="border border-gray-300 px-2 sm:px-3 py-2 text-right text-xs sm:text-sm">Unit Price (₵)</th>
+              <th class="border border-gray-300 px-2 sm:px-3 py-2 text-right text-xs sm:text-sm">Total (₵)</th>
+            </tr>
+          </thead>
+          <tbody id="receiptItemsBody"></tbody>
+        </table>
+      </div>
+      <div class="text-right text-sm sm:text-base font-semibold text-gray-800 mb-1">
+        Subtotal: ₵<span id="receiptSubtotal">0.00</span>
+      </div>
+      <div class="text-right text-sm sm:text-base font-semibold text-gray-800 mb-1">
+        VAT (12.5%): ₵<span id="receiptVAT">0.00</span>
+      </div>
+      <div class="text-right text-base sm:text-lg font-bold text-blue-700 mb-4">
+        Total: ₵<span id="receiptTotal">0.00</span>
+      </div>
+      <div class="flex flex-col sm:flex-row justify-center gap-3">
+        <button
+          id="printBtn"
+          class="w-full sm:w-auto px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base flex items-center justify-center"
+        >
+          <i class="fas fa-print mr-2"></i> Print Receipt
+        </button>
+        <button
+          id="newReceiptBtn"
+          class="w-full sm:w-auto px-6 py-2 bg-gray-400 text-gray-900 rounded hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-400 text-sm sm:text-base"
+        >
+          New Receipt
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const itemsBody = document.getElementById("itemsBody");
+    const addItemBtn = document.getElementById("addItemBtn");
+    const subtotalEl = document.getElementById("subtotal");
+    const vatEl = document.getElementById("vat");
+    const totalEl = document.getElementById("total");
+    const receiptForm = document.getElementById("receiptForm");
+    const receiptSection = document.getElementById("receiptSection");
+    const receiptCustomerName = document.getElementById("receiptCustomerName");
+    const receiptDate = document.getElementById("receiptDate");
+    const receiptItemsBody = document.getElementById("receiptItemsBody");
+    const receiptSubtotal = document.getElementById("receiptSubtotal");
+    const receiptVAT = document.getElementById("receiptVAT");
+    const receiptTotal = document.getElementById("receiptTotal");
+    const printBtn = document.getElementById("printBtn");
+    const newReceiptBtn = document.getElementById("newReceiptBtn");
+
+    const VAT_RATE = 0.125;
+
+    function updateTotals() {
+      let subtotal = 0;
+      const rows = itemsBody.querySelectorAll("tr.item-row");
+      rows.forEach((row) => {
+        const qtyInput = row.querySelector('input[name="quantity"]');
+        const priceInput = row.querySelector('input[name="unitPrice"]');
+        const totalCell = row.querySelector(".total-cell");
+
+        const qty = parseFloat(qtyInput.value) || 0;
+        const price = parseFloat(priceInput.value) || 0;
+        const total = qty * price;
+        subtotal += total;
+
+        totalCell.textContent = `₵${total.toFixed(2)}`;
+      });
+
+      subtotalEl.textContent = subtotal.toFixed(2);
+      const vat = subtotal * VAT_RATE;
+      vatEl.textContent = vat.toFixed(2);
+      const total = subtotal + vat;
+      totalEl.textContent = total.toFixed(2);
+    }
+
+    function createItemRow() {
+      const tr = document.createElement("tr");
+      tr.classList.add("item-row");
+      tr.innerHTML = `
+        <td class="border border-gray-300 px-2 sm:px-3 py-2">
+          <input type="text" name="itemName" placeholder="Item name" class="w-full border border-gray-300 rounded px-2 py-1 text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-blue-500" required />
+        </td>
+        <td class="border border-gray-300 px-2 sm:px-3 py-2">
+          <input type="number" name="quantity" min="1" value="1" class="w-full border border-gray-300 rounded px-2 py-1 text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-blue-500" required />
+        </td>
+        <td class="border border-gray-300 px-2 sm:px-3 py-2">
+          <input type="number" name="unitPrice" min="0" step="0.01" value="0.00" class="w-full border border-gray-300 rounded px-2 py-1 text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-blue-500" required />
+        </td>
+        <td class="border border-gray-300 px-2 sm:px-3 py-2 text-right text-xs sm:text-sm total-cell">₵0.00</td>
+        <td class="border border-gray-300 px-2 sm:px-3 py-2 text-center text-xs sm:text-sm">
+          <button type="button" class="remove-item text-red-600 hover:text-red-800 focus:outline-none" aria-label="Remove item">
+            <i class="fas fa-trash-alt"></i>
+          </button>
+        </td>`;
+      return tr;
+    }
+
+    function attachInputListeners(row) {
+      const qtyInput = row.querySelector('input[name="quantity"]');
+      const priceInput = row.querySelector('input[name="unitPrice"]');
+      const removeBtn = row.querySelector(".remove-item");
+
+      qtyInput.addEventListener("input", updateTotals);
+      priceInput.addEventListener("input", updateTotals);
+
+      removeBtn.addEventListener("click", () => {
+        if (itemsBody.querySelectorAll("tr.item-row").length > 1) {
+          row.remove();
+          updateTotals();
+        }
+      });
+    }
+
+    addItemBtn.addEventListener("click", () => {
+      const newRow = createItemRow();
+      itemsBody.appendChild(newRow);
+      attachInputListeners(newRow);
+    });
+
+    document.querySelectorAll("tr.item-row").forEach(attachInputListeners);
+
+    receiptForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      if (!receiptForm.checkValidity()) {
+        receiptForm.reportValidity();
+        return;
+      }
+
+      const customerName = document.getElementById("customerName").value.trim();
+      const date = new Date().toLocaleString();
+
+      const items = [];
+      const rows = itemsBody.querySelectorAll("tr.item-row");
+      rows.forEach((row) => {
+        const itemName = row.querySelector('input[name="itemName"]').value.trim();
+        const quantity = parseFloat(row.querySelector('input[name="quantity"]').value) || 0;
+        const unitPrice = parseFloat(row.querySelector('input[name="unitPrice"]').value) || 0;
+        const total = quantity * unitPrice;
+        items.push({ itemName, quantity, unitPrice, total });
+      });
+
+      const subtotal = items.reduce((acc, i) => acc + i.total, 0);
+      const vat = subtotal * VAT_RATE;
+      const total = subtotal + vat;
+
+      receiptCustomerName.textContent = customerName;
+      receiptDate.textContent = date;
+      receiptItemsBody.innerHTML = "";
+      items.forEach(({ itemName, quantity, unitPrice, total }) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="border border-gray-300 px-2 sm:px-3 py-2 text-xs sm:text-sm">${itemName}</td>
+          <td class="border border-gray-300 px-2 sm:px-3 py-2 text-right text-xs sm:text-sm">${quantity}</td>
+          <td class="border border-gray-300 px-2 sm:px-3 py-2 text-right text-xs sm:text-sm">₵${unitPrice.toFixed(2)}</td>
+          <td class="border border-gray-300 px-2 sm:px-3 py-2 text-right text-xs sm:text-sm">₵${total.toFixed(2)}</td>
+        `;
+        receiptItemsBody.appendChild(tr);
+      });
+
+      receiptSubtotal.textContent = subtotal.toFixed(2);
+      receiptVAT.textContent = vat.toFixed(2);
+      receiptTotal.textContent = total.toFixed(2);
+
+      receiptSection.classList.remove("hidden");
+      receiptForm.classList.add("hidden");
+    });
+
+    printBtn.addEventListener("click", () => {
+      window.print();
+    });
+
+    newReceiptBtn.addEventListener("click", () => {
+      receiptSection.classList.add("hidden");
+      receiptForm.classList.remove("hidden");
+      receiptForm.reset();
+      itemsBody.innerHTML = "";
+      const firstRow = createItemRow();
+      itemsBody.appendChild(firstRow);
+      attachInputListeners(firstRow);
+      updateTotals();
+    });
+
+    updateTotals();
+  </script>
+</body>
+</html>
